@@ -80,8 +80,14 @@ if __name__ == '__main__':
             cd_preds = torch.argmax(cd_preds, 1)
             labels = labels.squeeze(1)
 
+            images_l = images_l.cpu().numpy()
+            images_r = images_r.cpu().numpy()
+            labels = labels.cpu().numpy()
+            cd_preds = cd_preds.cpu().numpy()
+            cd_loss = cd_loss.data.cpu().numpy()
+
             # Calculate confusion matrix get recall, precision and mean iou
-            cm = generate_matrix(labels.cpu().numpy(), cd_preds.cpu().numpy(),
+            cm = generate_matrix(labels, cd_preds,
                                  num_classes=args.num_classes)
 
             # Recorde model metrics
@@ -89,10 +95,10 @@ if __name__ == '__main__':
             mean_iou, ious = get_mean_iou(total_cm)
             mean_recall, recalls = get_recall(total_cm)
             mean_precision, precisions = get_precision(total_cm)
-            train_loss.append(loss.data.cpu().numpy())
+            train_loss.append(loss)
 
             # Write training information to tensorboard
-            writer[0].add_scalar("loss", loss.data.cpu().numpy(), step)
+            writer[0].add_scalar("loss", loss, step)
             writer[0].add_scalar("mean_iou", mean_iou, step)
             writer[0].add_scalar("mean_recall", mean_recall, step)
             writer[0].add_scalar("mean_precision", mean_precision, step)
@@ -103,14 +109,15 @@ if __name__ == '__main__':
                 writer[i+1].add_scalar("precisions", precisions[i], step)
 
             if step % image_write_step == 0:
-                for i in range(len(labels)):
-                    masks = torch.where(labels == 255, True, False) | torch.where(labels == 0, True, False)
-                    labels = torch.where(masks, 0, 1)
-                    image_l = images_l[i].cpu().numpy().transpose(1, 2, 0) * 255
-                    image_r = images_r[i].cpu().numpy().transpose(1, 2, 0) * 255
-                    label = labels[i].cpu().numpy().astype(np.uint8)
+                masks = np.where(labels == 255, True, False) | np.where(labels == 0, True, False)
+                labels = np.where(masks, 0, 1)
 
-                    cd_pred = cd_preds[i].cpu().numpy().astype(np.uint8)
+                for i in range(len(labels)):
+                    image_l = images_l[i].transpose(1, 2, 0) * 255
+                    image_r = images_r[i].transpose(1, 2, 0) * 255
+                    label = labels[i].astype(np.uint8)
+
+                    cd_pred = cd_preds[i].astype(np.uint8)
 
                     label = label_to_color_image(label)
                     cd_pred = label_to_color_image(cd_pred)
@@ -125,7 +132,7 @@ if __name__ == '__main__':
 
             scheduler.step()
             step += 1
-            tbar.set_postfix(loss="{:.4f}".format(loss.data.cpu().numpy()),
+            tbar.set_postfix(loss="{:.4f}".format(loss),
                              m_iou="{:.4f}".format(mean_iou),
                              m_recall="{:.4f}".format(mean_recall),
                              m_precision="{:.4f}".format(mean_precision))
@@ -149,21 +156,27 @@ if __name__ == '__main__':
                 cd_preds = torch.argmax(cd_preds, 1)
                 labels = labels.squeeze(1)
 
+                images_l = images_l.cpu().numpy()
+                images_r = images_r.cpu().numpy()
+                labels = labels.cpu().numpy()
+                cd_preds = cd_preds.cpu().numpy()
+                cd_loss = cd_loss.data.cpu().numpy()
+
                 # Calculate confusion matrix get recall, precision and mean iou
-                cm = generate_matrix(labels.cpu().numpy(), cd_preds.cpu().numpy(),
+                cm = generate_matrix(labels, cd_preds,
                                      num_classes=args.num_classes)
 
                 total_cm += cm
-                test_loss.append(cd_loss.data.cpu().numpy())
+                test_loss.append(cd_loss)
                 if write_image:
                     write_image = False
+                    masks = np.where(labels == 255, True, False) | torch.where(labels == 0, True, False)
+                    labels = np.where(masks, 0, 1)
                     for i in range(len(labels)):
-                        masks = torch.where(labels == 255, True, False) | torch.where(labels == 0, True, False)
-                        labels = torch.where(masks, 0, 1)
-                        image_l = images_l[i].cpu().numpy().transpose(1, 2, 0) * 255
-                        image_r = images_r[i].cpu().numpy().transpose(1, 2, 0) * 255
-                        label = labels[i].cpu().numpy().astype(np.uint8)
-                        cd_pred = cd_preds[i].cpu().numpy().astype(np.uint8)
+                        image_l = images_l[i].transpose(1, 2, 0) * 255
+                        image_r = images_r[i].transpose(1, 2, 0) * 255
+                        label = labels[i].astype(np.uint8)
+                        cd_pred = cd_preds[i].astype(np.uint8)
 
                         label = label_to_color_image(label)
                         cd_pred = label_to_color_image(cd_pred)
