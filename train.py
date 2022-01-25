@@ -73,8 +73,7 @@ if __name__ == '__main__':
             cd_preds = model(images_l, images_r)
 
             cd_loss = criterion(cd_preds, labels)
-            loss = cd_loss
-            loss.backward()
+            cd_loss.backward()
             optimizer.step()
 
             cd_preds = torch.argmax(cd_preds, 1)
@@ -95,10 +94,10 @@ if __name__ == '__main__':
             mean_iou, ious = get_mean_iou(total_cm)
             mean_recall, recalls = get_recall(total_cm)
             mean_precision, precisions = get_precision(total_cm)
-            train_loss.append(loss)
+            train_loss.append(cd_loss)
 
             # Write training information to tensorboard
-            writer[0].add_scalar("loss", loss, step)
+            writer[0].add_scalar("loss", cd_loss, step)
             writer[0].add_scalar("mean_iou", mean_iou, step)
             writer[0].add_scalar("mean_recall", mean_recall, step)
             writer[0].add_scalar("mean_precision", mean_precision, step)
@@ -132,7 +131,7 @@ if __name__ == '__main__':
 
             scheduler.step()
             step += 1
-            tbar.set_postfix(loss="{:.4f}".format(loss),
+            tbar.set_postfix(loss="{:.4f}".format(cd_loss),
                              m_iou="{:.4f}".format(mean_iou),
                              m_recall="{:.4f}".format(mean_recall),
                              m_precision="{:.4f}".format(mean_precision))
@@ -170,7 +169,7 @@ if __name__ == '__main__':
                 test_loss.append(cd_loss)
                 if write_image:
                     write_image = False
-                    masks = np.where(labels == 255, True, False) | torch.where(labels == 0, True, False)
+                    masks = np.where(labels == 255, True, False) | np.where(labels == 0, True, False)
                     labels = np.where(masks, 0, 1)
                     for i in range(len(labels)):
                         image_l = images_l[i].transpose(1, 2, 0) * 255
