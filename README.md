@@ -17,7 +17,7 @@ git clone https://github.com/Runist/Siam-NestedUNet
 
 ```shell
 cd Siam-NestedUNet
-pip installl -r requirements.txt
+pip install -r requirements.txt
 ```
 3. Download the change detection dataset. You can find the dataset  in this [repository](https://github.com/likyoo/Siam-NestedUNet#dataset).
 4. Configure the parameters in [utils/parser.py](https://github.com/Runist/Siam-NestedUNet/blob/master/utils/parser.py).
