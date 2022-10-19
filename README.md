@@ -5,7 +5,7 @@
 ![image.png](https://i.loli.net/2021/11/26/kuJWxPLg4EzmCVq.png)
 
 Network for Change Detection. The pytorch implementation for "[SNUNet-CD: A Densely Connected Siamese Network for Change Detection of VHR Images](https://ieeexplore.ieee.org/document/9355573) ". For details, please see [blog](https://blog.csdn.net/weixin_42392454/article/details/121557001?spm=1001.2014.3001.5501).
-
+If this works for you, please give me a star, this is very important to me.😊
 ## Quick start
 
 1. clone this repository
